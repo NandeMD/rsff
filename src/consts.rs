@@ -3,6 +3,7 @@
 /// `RAW`: Raw XML string
 /// `ZLIB`: Compressed XML
 /// `TXT`: Raw, lossy .txt file
+#[derive(Clone)]
 pub enum OUT {
     RAW,
     ZLIB,
@@ -13,7 +14,7 @@ pub enum OUT {
 /// 
 /// ST: Sub-text\
 /// OT: Over-text
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum TYPES {
     DIALOGUE,
     SQUARE,

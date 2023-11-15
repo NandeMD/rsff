@@ -255,7 +255,7 @@ impl Document {
     }
 
     // Generate a document from xml string.
-    fn xml_to_doc(&mut self, xml: String) -> XMLConvertResult<Document> {
+    pub fn xml_to_doc(&mut self, xml: String) -> XMLConvertResult<Document> {
         // Create an empty document
         let mut d = Document::default();
 

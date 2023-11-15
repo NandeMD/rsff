@@ -4,7 +4,7 @@ use base64::{engine, Engine as _, alphabet};
 const B64: engine::GeneralPurpose = engine::GeneralPurpose::new(&alphabet::URL_SAFE, engine::general_purpose::NO_PAD);
 
 /// A simple image container
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct BalloonImage {
     pub img_type: String,
     pub img_data: Vec<u8>
@@ -22,7 +22,7 @@ pub struct BalloonImage {
 /// let mut b: Balloon = Balloon::default();
 /// b.tl_content.push("This is a tl line.".to_string());
 /// ```
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Balloon {
     pub tl_content: Vec<String>,
     pub pr_content: Vec<String>,

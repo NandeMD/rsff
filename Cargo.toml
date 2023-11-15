@@ -18,6 +18,9 @@ roxmltree = "0.18.1"
 criterion = { version = "0.4", features = ["html_reports"] }
 
 [[bench]]
-name = "flare2_benches"
+name = "balloon_benches"
 harness = false
 
+[[bench]]
+name = "document_benches"
+harness = false
