@@ -1,3 +1,8 @@
+//! # rsff
+//! 
+//! `rsff` (scanlation file format) is the core library of an application designed to 
+//! facilitate the work of teams translating content such as manga, manhwa, manhua, webtoons, etc.
+
 use balloon::{Balloon, BalloonImage};
 use consts::{OUT, TYPES};
 
@@ -22,16 +27,46 @@ type XMLConvertResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 #[derive(Clone, Debug)]
 struct FileDoesNotExists;
 
+/// A document containing all of your translation data.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use rsff::Document;
+/// use rsff::balloon::Balloon;
+/// 
+/// // Create a default document.
+/// let mut d: Document = Document::default();
+/// 
+/// // Create a default balloon.
+/// let mut b: Balloon = Balloon::default();
+/// 
+/// // Add content to the balloon.
+/// b.tl_content.push("This is a translation line.".to_string());
+/// 
+/// // Add balloon to the document.
+/// d.balloons.push(b);
+/// ```
 #[allow(non_snake_case)]
 #[derive(Debug)]
 pub struct Document {
+    /// sff (Scanlation File Format) version. No big changes expected.
     pub METADATA_SCRIPT_VERSION: String,
+    /// If you use this library for an app, it may come in handy to indicate your app's version.
     pub METADATA_APP_VERSION: String,
+    /// Some other info you want to give/specify.
     pub METADATA_INFO: String,
+    /// There is your balloons m8.
     pub balloons: Vec<Balloon>
 }
 
 impl Default for Document {
+    /// ```
+    /// METADATA_SCRIPT_VERSION: String::from("Scanlation Script File v0.2.0"),
+    /// METADATA_APP_VERSION: String::new(),
+    /// METADATA_INFO: String::from("Num"),
+    /// balloons: Vec::new()
+    /// ```
     fn default() -> Self {    
         Self {
             METADATA_SCRIPT_VERSION: String::from("Scanlation Script File v0.2.0"),
@@ -43,6 +78,8 @@ impl Default for Document {
 }
 
 impl Document {
+    /// Total character count of all translation content.
+    /// *(Spaces included.)*
     pub fn tl_chars(&self) -> usize {
         self.balloons
             .iter()
@@ -51,6 +88,8 @@ impl Document {
             }).sum()
     }
 
+    /// Total character count of all proofread content.
+    /// *(Spaces included.)*
     pub fn pr_chars(&self) -> usize {
         self.balloons
             .iter()
@@ -59,6 +98,8 @@ impl Document {
             }).sum()
     }
 
+    /// Total character count of all comments.
+    /// *(Spaces included.)*
     pub fn comment_chars(&self) -> usize {
         self.balloons
             .iter()
@@ -67,6 +108,8 @@ impl Document {
             }).sum()
     }
 
+    /// Total line count of the whole document.
+    /// Counts pr content lines if balloon has pr content, otherwise counts tl content lines.
     pub fn line_count(&self) -> usize {
         self.balloons
             .iter()
@@ -75,10 +118,15 @@ impl Document {
             }).sum()
     }
 
+    /// Total balloon count.
     pub fn len(&self) -> usize {
         self.balloons.len()
     }
 
+    /// Generates stringified version of the document.
+    /// Use this with caution because of data loss.
+    /// 
+    /// **IMPORTANT NOTE:** ***Metadata and balloon_img are lost during the creation of the text!!!***
     pub fn to_string(&self) -> String {
         let mut all_text: Vec<String> = Vec::new();
 
@@ -94,6 +142,9 @@ impl Document {
         return all_text.join("\n\n");
     }
 
+    /// Generates an xml string of the balloon. No data loss so you can use this whenever you want.
+    /// 
+    /// **Note:** Raw image data will be converted to a b64 encoded string.
     pub fn to_xml(&self) -> String{
         let mut xml = String::from("<Document><Metadata>");
 
@@ -137,6 +188,7 @@ impl Document {
         return xml;
     }
 
+    // Save as a raw xml file.
     fn save_raw(&self, fp: &str) {
         let mut file = File::create(
             format!("{fp}.sffx")
@@ -144,6 +196,7 @@ impl Document {
         file.write(self.to_xml().as_bytes()).unwrap();
     }
 
+    // Save as a compressed xml file.
     fn save_zlib(&self, fp: &str) {
         let mut f = File::create(format!("{fp}.sffz")).unwrap();
         let mut enc = ZlibEncoder::new(Vec::new(), Compression::best());
@@ -152,6 +205,25 @@ impl Document {
         f.write(&encoded).unwrap();
     }
 
+    /// Save your document as raw xml, compressed xml or .txt file.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rsff::Document;
+    /// use rsff::consts::OUT;
+    /// 
+    /// let d = Document::default();
+    /// 
+    /// // Save as raw xml:
+    /// d.save(OUT::RAW, "raw_xml");
+    /// 
+    /// // Save as ZLIB compressed xml:
+    /// d.save(OUT::ZLIB, "compressed_xml");
+    /// 
+    /// // Save as raw text:
+    /// d.save(OUT::TXT, "raw_text");
+    /// ```
     pub fn save(&self, out_type: OUT, fp: &str) {
         match out_type {
             OUT::RAW => self.save_raw(fp),
@@ -164,6 +236,7 @@ impl Document {
         }
     }
 
+    // Generate text of the whole document.
     fn file_to_string(&self, p: &Path) -> String {
         let mut s = String::new();
         let mut f = File::open(p).unwrap();
@@ -172,6 +245,7 @@ impl Document {
         return s;
     }
 
+    // Open a file and return it's byte content.
     fn file_to_bytes(&self, p: &Path) -> Vec<u8> {
         let mut buff: Vec<u8> = Vec::new();
         let mut f = File::open(p).unwrap();
@@ -180,6 +254,7 @@ impl Document {
         return buff;
     }
 
+    // Generate a document from xml string.
     fn xml_to_doc(&mut self, xml: String) -> XMLConvertResult<Document> {
         let mut d = Document::default();
         let tree = roxmltree::Document::parse(&xml)?;
@@ -249,7 +324,7 @@ impl Document {
         return Ok(d);
     }
 
-    fn decide_b_type(&self, ln: &str) -> TYPES {
+    fn decide_b_type_from_txt_line_headers(&self, ln: &str) -> TYPES {
         let s = &ln[0..2];
 
         match s {
@@ -262,6 +337,7 @@ impl Document {
         }
     }
 
+    // Generate a document from lossy text.
     fn txt_to_doc(&self, txt: String) -> XMLConvertResult<Document> {
         let mut d = Document::default();
         let mut texts: Vec<String> = Vec::with_capacity(10);
@@ -275,7 +351,7 @@ impl Document {
             let current = splitted[i];
 
             let mut b = Balloon::default();
-            b.btype = self.decide_b_type(current);
+            b.btype = self.decide_b_type_from_txt_line_headers(current);
             
             let next = splitted.get(i+1).unwrap_or(&"");
 
@@ -301,6 +377,19 @@ impl Document {
         return Ok(d);
     }
 
+    /// Open a supported sffx, sffz or txt file and generate a document.
+    /// 
+    /// `fp`: full path for the file.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rsff::Document;
+    /// 
+    /// let mut d: Document = Document::default().open("test.sffx").unwrap().unwrap();
+    /// ```
+    /// 
+    /// **Note:** I messed up this absolutely shitty method and will change it in the future definitely.
     pub fn open(&mut self, fp: &str) -> Result<XMLConvertResult<Document>, &str> {
         let p = Path::new(fp);
 

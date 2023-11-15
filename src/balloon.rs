@@ -3,12 +3,25 @@ use base64::{engine, Engine as _, alphabet};
 
 const B64: engine::GeneralPurpose = engine::GeneralPurpose::new(&alphabet::URL_SAFE, engine::general_purpose::NO_PAD);
 
+/// A simple image container
 #[derive(Default, Debug)]
 pub struct BalloonImage {
     pub img_type: String,
     pub img_data: Vec<u8>
 }
 
+
+/// A struct represents a balloon.
+/// 
+/// Contains translation and proofred contents, comments, balloon image (if has any). Must have a distinct type.
+/// # Examples
+/// 
+/// ```
+/// use rsff::balloon::Balloon;
+/// 
+/// let mut b: Balloon = Balloon::default();
+/// b.tl_content.push("This is a tl line.".to_string());
+/// ```
 #[derive(Default, Debug)]
 pub struct Balloon {
     pub tl_content: Vec<String>,
@@ -19,14 +32,34 @@ pub struct Balloon {
 }
 
 impl Balloon {
+    /// Add image to balloon. Creates a `BalloonImage` struct and adds to the balloon.
+    /// `img_type` is a string defines image's extention. '.jpg' etc.
+    /// `img_data` is raw image as bytes.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use rsff::balloon::Balloon;
+    /// use image;
+    /// 
+    /// let mut b = Balloon::default();
+    /// let test_img = image::open("testimg.jpg").unwrap();
+    /// b.add_image(
+    ///     "jpg".to_string(),
+    ///     test_img.into_bytes()
+    /// );
+    /// ```
     pub fn add_image(&mut self, img_type: String, img_data: Vec<u8>) {
         self.balloon_img = Some(BalloonImage {img_type, img_data});
     }
 
+    /// Removes the image from balloon.
     pub fn remove_img(&mut self) {
         self.balloon_img = None;
     }
 
+    /// Total character count of all translation content.
+    /// *(Spaces included.)*
     pub fn tl_chars(&self) -> usize {
         self.tl_content
             .iter()
@@ -34,6 +67,8 @@ impl Balloon {
             .sum()
     }
 
+    /// Total character count of all proofread content.
+    /// *(Spaces included.)*
     pub fn pr_chars(&self) -> usize {
         self.pr_content
             .iter()
@@ -41,6 +76,8 @@ impl Balloon {
             .sum()
     }
 
+    /// Total character count of all comments.
+    /// *(Spaces included.)*
     pub fn comments_chars(&self) -> usize {
         self.comments
             .iter()
@@ -48,6 +85,8 @@ impl Balloon {
             .sum()
     }
 
+    /// Total line count of the balloon.
+    /// Counts pr content lines if balloon has pr content, otherwise counts tl content lines.
     pub fn line_count(&self) -> usize {
         if self.pr_content.len() > 0 {
             return self.pr_content.len();
@@ -56,6 +95,10 @@ impl Balloon {
         }
     }
 
+    /// Generates stringified version of the balloon.
+    /// Use this with caution because of data loss.
+    /// 
+    /// **IMPORTANT NOTE:** ***Metadata and balloon_img are lost during the creation of the text!!!***
     pub fn to_string(&self) -> String {
         let type_str = match self.btype {
             TYPES::DIALOGUE => "(): ",
@@ -84,6 +127,9 @@ impl Balloon {
         }
     }
 
+    /// Generates an xml string of the balloon. No data loss so you can use this whenever you want.
+    /// 
+    /// **Note:** Raw image data will be converted to a b64 encoded string.
     pub fn to_xml(&self) -> String {
         let b_type_text = match self.btype {
             TYPES::DIALOGUE => "Dialogue",
