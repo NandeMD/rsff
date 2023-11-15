@@ -100,6 +100,7 @@ impl Balloon {
     /// 
     /// **IMPORTANT NOTE:** ***Metadata and balloon_img are lost during the creation of the text!!!***
     pub fn to_string(&self) -> String {
+        // Decide balloon type header text
         let type_str = match self.btype {
             TYPES::DIALOGUE => "(): ",
             TYPES::OT => "OT: ",
@@ -108,6 +109,8 @@ impl Balloon {
             TYPES::THINKING => "{}: "
         };
 
+        // If balloon has pr content, generate balloon text from pr content
+        // else, generate balloon text from tl content
         if self.pr_content.len() > 0 {
             return self.pr_content
                 .iter()
@@ -131,6 +134,7 @@ impl Balloon {
     /// 
     /// **Note:** Raw image data will be converted to a b64 encoded string.
     pub fn to_xml(&self) -> String {
+        // Decide balloon type attribute text for xml
         let b_type_text = match self.btype {
             TYPES::DIALOGUE => "Dialogue",
             TYPES::SQUARE => "Square",
@@ -144,6 +148,7 @@ impl Balloon {
             b_type_text
         );
 
+        // Iterate over tl, pr, comments and create tags and their inner contents
         for tl in &self.tl_content {
             xml.push_str(
                 format!("<TL>{}</TL>", tl).as_str()
@@ -162,6 +167,8 @@ impl Balloon {
             );
         }
 
+        // If balloon has an image:
+        // Encode raw image data with b64 and save it's file extention to type attribute
         if self.balloon_img.is_some() {
             let img = self.balloon_img.as_ref().unwrap();
             let encoded_img = B64.encode(&img.img_data);

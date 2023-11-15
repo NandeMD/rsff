@@ -256,16 +256,26 @@ impl Document {
 
     // Generate a document from xml string.
     fn xml_to_doc(&mut self, xml: String) -> XMLConvertResult<Document> {
+        // Create an empty document
         let mut d = Document::default();
+
+        // Parse xml string
         let tree = roxmltree::Document::parse(&xml)?;
+
+        // Find metadata tag
         let md = tree.descendants().find(|d| {d.tag_name().name() == "Metadata"}).unwrap();
 
+        // Register file's metadata as document's metadata
+        // Note: Some other metadata like tl_chars / tl_content are dynamically 
+        // thus no need to register them.
         d.METADATA_SCRIPT_VERSION = md.children().find(|c| {c.tag_name().name() == "Script"}).unwrap().text().unwrap_or("").to_string();
         d.METADATA_APP_VERSION = md.children().find(|c| {c.tag_name().name() == "App"}).unwrap().text().unwrap_or("").to_string();
         d.METADATA_INFO = md.children().find(|c| {c.tag_name().name() == "Info"}).unwrap().text().unwrap_or("").to_string();
 
+        // Find Balloons tag
         let bs = tree.descendants().find(|c| {c.tag_name().name() == "Balloons"}).unwrap();
 
+        // Iterate over all xml balloons and generate Balloon struct, then add those structs to document
         for c in bs.children() {
             let mut b = Balloon {
                 btype: match c.attribute("type").unwrap() {
@@ -338,6 +348,8 @@ impl Document {
     }
 
     // Generate a document from lossy text.
+    // Why did i write this?
+    // This is probably most unnecessary code ib this crate.
     fn txt_to_doc(&self, txt: String) -> XMLConvertResult<Document> {
         let mut d = Document::default();
         let mut texts: Vec<String> = Vec::with_capacity(10);
