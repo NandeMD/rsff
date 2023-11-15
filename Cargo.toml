@@ -1,7 +1,10 @@
 [package]
 name = "rsff"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+description = "Core library of an application designed to facilitate the work of teams translating content such as manga, manhwa, manhua, webtoons, etc."
+authors = ["NandeMD"]
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
