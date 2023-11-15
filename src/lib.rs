@@ -61,7 +61,7 @@ pub struct Document {
 }
 
 impl Default for Document {
-    /// ```
+    /// ```notrust
     /// METADATA_SCRIPT_VERSION: String::from("Scanlation Script File v0.2.0"),
     /// METADATA_APP_VERSION: String::new(),
     /// METADATA_INFO: String::from("Num"),
