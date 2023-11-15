@@ -1,0 +1,20 @@
+[package]
+name = "rsff"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.21.4"
+flate2 = "1.0.28"
+image = "0.24.7"
+roxmltree = "0.18.1"
+
+[dev-dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+
+[[bench]]
+name = "flare2_benches"
+harness = false
+
