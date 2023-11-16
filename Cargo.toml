@@ -5,6 +5,10 @@ edition = "2021"
 description = "Core library of an application designed to facilitate the work of teams translating content such as manga, manhwa, manhua, webtoons, etc."
 authors = ["NandeMD"]
 readme = "README.md"
+repository = "https://github.com/NandeMD/rsff"
+license-file = "LICENSE"
+keywords = ["scanlation", "file", "webtoon", "manga", "manhwa"]
+categories = ["parsing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
